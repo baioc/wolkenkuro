@@ -1,11 +1,17 @@
 ;;;; GENERIC BACKTRACKING USING CONTINUATION-PASSING STYLE
 
-;; success (return) continuation: (lambda (solution) ...)
-;; fail (backtrack/reject) continuation: (lambda () ...)
-;; elimination (collapse) procedure:
-;;  (lambda (try/else problem fail)
-;;    (try/else something
-;;              (lambda () (try/else otherthings fail))))
+;; success/return continuation:
+;;   (lambda (solution) <...>)
+;;
+;; fail/backtrack continuation:
+;;   (lambda () <...>)
+;;
+;; walk/pruning procedure:
+;;   (lambda (try/else problem fail)
+;;     (try/else <do-something>
+;;               (lambda ()
+;;                 <undo-that-something>
+;;                 (try/else <otherthings> fail))))
 
 ;;; given a nondeterministically solvable problem:
 ;;; if there are still any ambiguities left to resolve:
