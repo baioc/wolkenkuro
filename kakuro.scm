@@ -11,11 +11,11 @@
   (list 'restriction col row))
 
 ;; get the sum of column in restriction
-(define (restriction-sum-column restr)
+(define (restriction-col restr)
   (cadr restr))
 
 ;; get the sum of row in restriction
-(define (restriction-sum-row restr)
+(define (restriction-row restr)
   (caddr restr))
 
 ;; get the qt of cells in column restriction
@@ -57,10 +57,25 @@
 )
 
 
+;; fill line with possibles values limiteds by restriction
+(define (fill-possibles-restr restr line)
+  (if (= restr 0)
+    (cons restr line)
+    (if (null? line)
+      (cons restr line)
+      (if (> (/ restr (length line)) 5) ;; pick mean, sum of restriction by qt of cells
+        (cons restr (fill-cells line (return-options (length line) T restr)))
+        (cons restr (fill-cells line (return-options (length line) Nil restr)))
+      )
+    )
+  )
+)
 
-;; fill cell with options values
-(define (prune-line line list)
-  line
+(define (fill-cells line val)
+  (if (null? line)
+    '()
+    (cons (correct-val (car line) val) (fill-cells (cdr line)))
+  )
 )
 
 ;; Pruning a line in kakuro
@@ -75,5 +90,11 @@
   (display (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))
   (display (length (split-list '('(rest) 0 0 0 '(o sa ) 0 0))))
   (display (length (car (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))))
+  (display "\n")
+  (display (return-options 5 15 #f))
+  (display "\n")
+  (display (return-options 3 20 #t))
+  (display "\n")
+  (display (correct-val '(2 3 4 5) '(1 2 3)))
 )
 (main)

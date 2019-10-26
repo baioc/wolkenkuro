@@ -28,3 +28,30 @@
       '()
       (cons (car l) (split-list-aux (cdr l)))
     )))
+
+;; make a list with the limitations of quantity of cells and the sum
+(define (return-options n sum invert)
+  (if (not invert)
+    (make-list 1 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) )) )
+    (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9) 
+  )
+)
+
+;; Make a list starts in n until k
+(define (make-list n k)
+  (if (> n k)
+    '()
+    (cons n (make-list (+ n 1) k))
+  )
+)
+
+(define (correct-val cell val)
+  (if (= (length cell) 1)
+    cell
+    (if (= (length val) 1)
+      val
+      (make-list (max (car cell) (car val)) (min (list-ref cell (- (length cell) 1)) (list-ref val (- (length val) 1))))
+    )
+  )
+)
+
