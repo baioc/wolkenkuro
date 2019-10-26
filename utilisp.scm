@@ -1,3 +1,13 @@
+;;; Miscellaneous utility procedures
+
+;; return list with x as its last element
+(define (push list x)
+  (append list `(,x)))
+
+;; returns the car of a list if not null, alternatively a default value
+(define (maybe-car lst alt)
+  (if (null? lst) alt (car lst)))
+
 ;; perform the Fisher-Yates-Knuth shuffle on a list
 (define (shuffle list)
   (let ((n (length list))
@@ -12,6 +22,7 @@
             (loop (- i 1)))))
     (vector->list vec)))
 
+
 ;; identity function
 (define (identity x) x)
 
@@ -24,3 +35,9 @@
 ;; checks if an element x satisfies a predicate for every x in the list
 (define (every pred list)
   (not (any (lambda (x) (not (pred x))) list)))
+
+;; return the list ori without any elements in the list rem
+(define (purge rem ori)
+; (define delete remove) ; Chez/Racket remove === Guile delete
+  (if (null? rem) ori
+      (purge (cdr rem) (delete (car rem) ori))))

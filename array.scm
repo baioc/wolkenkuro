@@ -17,13 +17,14 @@
   (vector-set! (vector-ref mat i) j x))
 
 (define (array-map! new proc mat)
-  (let iter ((i 0) (j 0))
-    (cond ((= i (vector-length mat)) '())
-          ((= j (vector-length (vector-ref mat i))
-            (iter (+ i 1) 0)))
-          (else
-            (array-set! new (array-ref mat i j) i j)
-            (iter i (+ j 1))))))
+  (let* ((dim (array-dimensions mat))
+         (m (car dim)) (n (cadr dim)))
+    (let iter ((i 0) (j 0))
+      (cond ((= i m) '())
+            ((= j n) (iter (+ i 1) 0))
+            (else
+              (array-set! new (array-ref mat i j) i j)
+              (iter i (+ j 1)))))))
 
 (define (array->list mat)
   (vector->list (vector-map vector->list mat)))
