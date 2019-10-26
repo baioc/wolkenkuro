@@ -50,11 +50,13 @@
           (iter (push col (matrix-get mat idx j)) (+ idx 1))))))
 
 ;; print matrix in monitor
-(define (show-matrix mat str i)
-  (if (= i (length (matrix-row mat 0)))
-    str
-    (string-append str (matrix-row mat i) "\n"
-    (show-matrix mat str (+ i 1)))
+(define (show-matrix mat i)
+  (if (= i (array-length mat))
+    0
+    (begin
+      (display (matrix-row mat i))
+      (display "\n")
+      (show-matrix mat (+ i 1))
+    )
   )
 )
-    

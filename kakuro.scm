@@ -8,7 +8,7 @@
 ;; this define cell have this layout
 ;;('restriction (sum in column) (sum in row) (quantity of cells in column) (quantity of cells in row))
 (define (make-restriction col row)
-  (list 'restriction col row 0 0))
+  (list 'restriction col row))
 
 ;; get the sum of column in restriction
 (define (restriction-sum-column restr)
@@ -19,12 +19,12 @@
   (caddr restr))
 
 ;; get the qt of cells in column restriction
-(define (restriction-qt-column restr)
-  (cadddr restr))
+;(define (restriction-qt-column restr)
+;  (cadddr restr))
 
 ;; get the qt of cells in row restriction
-(define (restriction-qt-row restr)
-  (car (cddddr restr)))
+;(define (restriction-qt-row restr)
+;  (car (cddddr restr)))
 
 ;; Return a Kakuro board
 (define (make-kakuro n)
@@ -55,8 +55,13 @@
     )
   )
 )
-;; Pick Line of Kakuro
 
+
+
+;; fill cell with options values
+(define (prune-line line list)
+  line
+)
 
 ;; Pruning a line in kakuro
 ;;pick line, sum and the qt of cells, remove numbers of possibilits
@@ -66,6 +71,9 @@
 )
 
 (define (main)
-  (display (show-matrix (fill-possibilits (make-kakuro 0) 0 0) "" 0))
+  (show-matrix (fill-possibilits (make-kakuro 0) 0 0) 0)
+  (display (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))
+  (display (length (split-list '('(rest) 0 0 0 '(o sa ) 0 0))))
+  (display (length (car (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))))
 )
 (main)
