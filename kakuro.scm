@@ -56,16 +56,23 @@
   )
 )
 
+;; fill possibilits in kakuro
+(define (fill-row-kakuro k i)
+  (if (= i (length (matrix-row k 0)))
+    '()
+    (append (list (fill-in-restr (split-list (matrix-row k i)))) (fill-row-kakuro k (+ i 1)))
+  )
+)
 
 ;; fill line with possibles values limiteds by restriction
 (define (fill-possibles-restr restr line)
   (if (= restr 0)
-    (cons restr line)
+    line
     (if (null? line)
-      (cons restr line)
+      line
       (if (> (/ restr (length line)) 5) ;; pick mean, sum of restriction by qt of cells
-        (cons restr (fill-cells line (return-options (length line) T restr)))
-        (cons restr (fill-cells line (return-options (length line) Nil restr)))
+        (fill-cells line (return-options (length line) restr #t))
+        (fill-cells line (return-options (length line) restr #f))
       )
     )
   )
@@ -74,7 +81,18 @@
 (define (fill-cells line val)
   (if (null? line)
     '()
-    (cons (correct-val (car line) val) (fill-cells (cdr line)))
+    (cons (correct-val (car line) val) (fill-cells (cdr line) val))
+  )
+)
+
+;; pick restrictions
+(define (fill-in-restr line)
+  (if (null? line)
+    '()
+    (if (= (restriction-row (caar line)) 0)
+      (cons (caar line) (fill-in-restr (cdr line)))
+      (append (cons (caar line) (fill-possibles-restr (restriction-row (caar line)) (cdar line))) (fill-in-restr (cdr line)))
+    )
   )
 )
 
@@ -95,6 +113,18 @@
   (display "\n")
   (display (return-options 3 20 #t))
   (display "\n")
-  (display (correct-val '(2 3 4 5) '(1 2 3)))
+  ;(display (correct-val '(2 3 4 5) '(1 2 3)))
+  (display "\n")
+  (display (matrix-col (make-kakuro 0) 1))
+  (display "\nTeste")
+  (display (caaar (split-list (matrix-row (make-kakuro 0) 5))))
+  (display "\n")
+  (display (split-list (matrix-row (make-kakuro 0) 3)))
+  (display "\n")
+  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3))))
+  (display "\nMaybe\n")
+  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 5))))
+  (display "\nTest Fill Row\n")
+  (show-matrix (list->matrix (fill-row-kakuro (make-kakuro 0) 0)) 0)
 )
 (main)

@@ -17,7 +17,7 @@
   (if (null? l)
     '()
     (if (list? (car l))
-      (list (cons (car l) (split-list-aux (cdr l))) (split-list (cdr l)))
+      (cons (cons (car l) (split-list-aux (cdr l))) (split-list (cdr l)))
       (split-list (cdr l))
     )))
 
@@ -32,8 +32,12 @@
 ;; make a list with the limitations of quantity of cells and the sum
 (define (return-options n sum invert)
   (if (not invert)
-    (make-list 1 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) )) )
-    (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9) 
+    (if (> (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9)
+      (make-list (+ 1  (- (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9) ) (min 9 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) ))))
+      (make-list 1 (min 9 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) ))))
+    )
+    (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45)(- n 2) )) 9)
+    ;(make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9) 
   )
 )
 
@@ -46,11 +50,14 @@
 )
 
 (define (correct-val cell val)
-  (if (= (length cell) 1)
-    cell
-    (if (= (length val) 1)
-      val
-      (make-list (max (car cell) (car val)) (min (list-ref cell (- (length cell) 1)) (list-ref val (- (length val) 1))))
+  (if (= cell 0)
+    val
+    (if (= (length cell) 1)
+      cell
+      (if (= (length val) 1)
+        val
+        (make-list (max (car cell) (car val)) (min (list-ref cell (- (length cell) 1)) (list-ref val (- (length val) 1))))
+      )
     )
   )
 )
