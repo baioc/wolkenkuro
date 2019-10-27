@@ -52,12 +52,9 @@
 (define (matrix-col-set! mat j column . opt-i)
   (if (null? column)
     '()
-    (if (eq? (caar column) 'restriction)
+    (begin 
+      (matrix-set! mat (maybe-car opt-i 0) j (car column))
       (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
-      (begin 
-        (matrix-set! mat (maybe-car opt-i 0) j (car column))
-        (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
-      )
     )
     ))
 

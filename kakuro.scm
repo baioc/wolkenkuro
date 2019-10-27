@@ -122,6 +122,22 @@
   (list->matrix (fill-row-kakuro (fill-col-kakuro k)))
 )
 
+(define (kakuro-next-possible k i j)
+  (if (= i (array-length k))
+    #f
+    (if (= j (length (matrix-row k 0)))
+      (kakuro-next-possible k (+ i 1) 0)
+      (if (= (length (matrix-get k i j)) 1)
+        (kakuro-next-possible k i (+ j 1))
+        (if (eq? (car (matrix-get k i j)) 'restriction)
+          (kakuro-next-possible k i (+ j 1))
+          (list i j)
+        )
+      )
+    )
+  )
+)
+
 (define (main)
   (show-matrix (fill-possibilits (make-kakuro 0) 0 0) 0)
   (display (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))
@@ -153,5 +169,12 @@
   (show-matrix (fill-col-kakuro (make-kakuro 0)))
   (display "\nTest Fill All\n")
   (show-matrix (prune-kakuro (make-kakuro 0)))
+
+  (display "\nTest Shuffle\n")
+  (show-matrix (matrix-map shuffle-kakuro (prune-kakuro (make-kakuro 0))))
+
+  (display "\nTest NextPossible\n")
+  (display (kakuro-next-possible (prune-kakuro (make-kakuro 0)) 3 2))
+
 )
 (main)
