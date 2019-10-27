@@ -56,14 +56,27 @@
   )
 )
 
-;; fill possibilits in kakuro
-(define (fill-row-kakuro k i)
-  (if (= i (length (matrix-row k 0)))
+;; fill possibilits in row of kakuro
+(define (fill-row-kakuro k . opt-i)
+  (if (= (maybe-car opt-i 0) (length (matrix-row k 0)))
     '()
-    (append (list (fill-in-restr (split-list (matrix-row k i)))) (fill-row-kakuro k (+ i 1)))
+    (append (list (fill-in-restr (split-list (matrix-row k (maybe-car opt-i 0))) #t))
+      (fill-row-kakuro k (+ (maybe-car opt-i 0) 1)))
   )
 )
 
+(define (fill-col-kakuro k . opt-j)
+  (if (= (maybe-car opt-j 0) (length (matrix-col k 0)))
+    ;'()
+    ;(append (list (fill-in-restr (split-list (matrix-col k (maybe-car opt-j 0))) #f))
+    ;  (fill-col-kakuro k (+ (maybe-car opt-j 0) 1)))
+    k
+    (begin 
+      (matrix-col-set! k (maybe-car opt-j 0)
+        (fill-in-restr (split-list (matrix-col k (maybe-car opt-j 0))) #f))
+      (fill-col-kakuro k (+ (maybe-car opt-j 0) 1)))
+  )
+)
 ;; fill line with possibles values limiteds by restriction
 (define (fill-possibles-restr restr line)
   (if (= restr 0)
@@ -86,12 +99,18 @@
 )
 
 ;; pick restrictions
-(define (fill-in-restr line)
+(define (fill-in-restr line isrow)
   (if (null? line)
     '()
-    (if (= (restriction-row (caar line)) 0)
-      (cons (caar line) (fill-in-restr (cdr line)))
-      (append (cons (caar line) (fill-possibles-restr (restriction-row (caar line)) (cdar line))) (fill-in-restr (cdr line)))
+    (if isrow
+      (if (= (restriction-row (caar line)) 0)
+        (cons (caar line) (fill-in-restr (cdr line) isrow))
+        (append (cons (caar line) (fill-possibles-restr (restriction-row (caar line)) (cdar line))) (fill-in-restr (cdr line) isrow))
+      )
+      (if (= (restriction-col (caar line)) 0)
+        (cons (caar line) (fill-in-restr (cdr line) isrow))
+        (append (cons (caar line) (fill-possibles-restr (restriction-col (caar line)) (cdar line))) (fill-in-restr (cdr line) isrow))
+      )
     )
   )
 )
@@ -99,15 +118,15 @@
 ;; Pruning a line in kakuro
 ;;pick line, sum and the qt of cells, remove numbers of possibilits
 ;;that exceed the sum
-(define (prune-line line n)
-  n
+(define (prune-kakuro k)
+  (list->matrix (fill-row-kakuro (fill-col-kakuro k)))
 )
 
 (define (main)
   (show-matrix (fill-possibilits (make-kakuro 0) 0 0) 0)
-  (display (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))
-  (display (length (split-list '('(rest) 0 0 0 '(o sa ) 0 0))))
-  (display (length (car (split-list '('(rest) 0 0 0 '(o sa ) 0 0)))))
+  (display (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))
+  (display (length (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0))))
+  (display (length (car (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))))
   (display "\n")
   (display (return-options 5 15 #f))
   (display "\n")
@@ -121,10 +140,18 @@
   (display "\n")
   (display (split-list (matrix-row (make-kakuro 0) 3)))
   (display "\n")
-  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3))))
+  (display (split-list (matrix-row (make-kakuro 0) 3 2)))
+  (display "\n")
+  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3)) #t))
   (display "\nMaybe\n")
-  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 5))))
+  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 5)) #t))
   (display "\nTest Fill Row\n")
-  (show-matrix (list->matrix (fill-row-kakuro (make-kakuro 0) 0)) 0)
+  (show-matrix (list->matrix (fill-row-kakuro (make-kakuro 0))))
+  (display "\nTest Fill Columns\n")
+  ;(display (fill-in-restr (split-list (matrix-col (make-kakuro 0) 0)) #f))
+  ;(display (fill-col-kakuro (make-kakuro 0)))
+  (show-matrix (fill-col-kakuro (make-kakuro 0)))
+  (display "\nTest Fill All\n")
+  (show-matrix (prune-kakuro (make-kakuro 0)))
 )
 (main)

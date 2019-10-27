@@ -49,14 +49,24 @@
       (if (>= idx m) col
           (iter (push col (matrix-get mat idx j)) (+ idx 1))))))
 
+(define (matrix-col-set! mat j column . opt-i)
+  (if (null? column)
+    '()
+    (if (eq? (caar column) 'restriction)
+      (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
+      (begin 
+        (matrix-set! mat (maybe-car opt-i 0) j (car column))
+        (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
+      )
+    )
+    ))
+
 ;; print matrix in monitor
-(define (show-matrix mat i)
-  (if (= i (array-length mat))
+(define (show-matrix mat . opt-i)
+  (if (= (maybe-car opt-i 0) (array-length mat))
     0
     (begin
-      (display (matrix-row mat i))
+      (display (matrix-row mat (maybe-car opt-i 0)))
       (display "\n")
-      (show-matrix mat (+ i 1))
-    )
-  )
-)
+      (show-matrix mat (+ (maybe-car opt-i 0) 1))
+    )))

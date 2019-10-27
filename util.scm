@@ -14,18 +14,26 @@
 
 ;; split list in cells that are list
 (define (split-list l)
+  ;(display l)
+  ;(newline)
   (if (null? l)
     '()
-    (if (list? (car l))
-      (cons (cons (car l) (split-list-aux (cdr l))) (split-list (cdr l)))
+    (if (pair? (car l))
+      (if (eq? (caar l) 'restriction)
+        (cons (cons (car l) (split-list-aux (cdr l))) (split-list (cdr l)))
+        (split-list (cdr l))
+      )
       (split-list (cdr l))
     )))
 
 (define (split-list-aux l)
   (if (null? l)
     '()
-    (if (list? (car l))
-      '()
+    (if (pair? (car l))
+      (if (eq? (caar l) 'restriction)
+        '()
+        (cons (car l) (split-list-aux (cdr l)))
+      )
       (cons (car l) (split-list-aux (cdr l)))
     )))
 
@@ -33,8 +41,8 @@
 (define (return-options n sum invert)
   (if (not invert)
     (if (> (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9)
-      (make-list (+ 1  (- (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9) ) (min 9 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) ))))
-      (make-list 1 (min 9 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) ))))
+      (make-list (+ 1  (- (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9) ) 9)
+      (make-list 1 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) )))
     )
     (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45)(- n 2) )) 9)
     ;(make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9) 
@@ -50,7 +58,7 @@
 )
 
 (define (correct-val cell val)
-  (if (= cell 0)
+  (if (not (list? cell))
     val
     (if (= (length cell) 1)
       cell
