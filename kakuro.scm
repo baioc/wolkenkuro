@@ -1,8 +1,8 @@
 ;;; Implementation of Kakuro board game in Scheme
 
 ;; Imports
-(load "util.scm")
 (load "matrix.scm")
+(load "utilisp.scm")
 
 ;; define restrict cells in matrix
 ;; this define cell have this layout
