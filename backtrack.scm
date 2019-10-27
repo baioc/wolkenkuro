@@ -34,10 +34,7 @@
                 (backtrack (lambda () (return #f))))
       (cond ((ambiguous? solutions) =>
                (lambda (ambiguity)
-                 (collapse (lambda (reduced undo) (retry reduced undo))
-                           solutions
-                           backtrack
-                           ambiguity)))
+                 (collapse retry solutions backtrack ambiguity)))
             ((not (valid? solutions)) (backtrack))
             (else (return solutions)))))))
 
