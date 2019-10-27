@@ -1,7 +1,7 @@
 ;;; Matrices and their manipulation as contiguous data structures
 ;;; uses Guile arrays but a vector implementation is provided in array.scm
 
-(load "utilisp.scm") ;; maybe-car, push
+(load "utilisp.scm") ;; maybe-car, snoc
 
 
 ;; make a m*n matrix filled with a default value v
@@ -39,7 +39,7 @@
          (n (cadr dim)))
     (let iter ((row '()) (idx (maybe-car opt-j 0)))
       (if (>= idx n) row
-          (iter (push row (matrix-get mat i idx)) (+ idx 1))))))
+          (iter (snoc row (matrix-get mat i idx)) (+ idx 1))))))
 
 ;; get the jth column of a matrix as a list (in order), starting from row i|0
 (define (matrix-col mat j . opt-i)
@@ -47,7 +47,7 @@
          (m (car dim)))
     (let iter ((col '()) (idx (maybe-car opt-i 0)))
       (if (>= idx m) col
-          (iter (push col (matrix-get mat idx j)) (+ idx 1))))))
+          (iter (snoc col (matrix-get mat idx j)) (+ idx 1))))))
 
 ;; print matrix in monitor
 (define (show-matrix mat str i)
