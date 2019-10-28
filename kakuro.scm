@@ -30,7 +30,7 @@
 (define (make-kakuro n)
   (define r make-restriction)
   (cond ((= n 0)
-        (list->matrix 
+        (list->matrix
           `((,(r 0 0)  ,(r 27 0) ,(r 15 0) ,(r 13 0) ,(r 35 0) ,(r 0 0))
             (,(r 0 28) 0         0         0         0         ,(r 12 0))
             (,(r 0 16) 0         0         0         0         0)
@@ -38,23 +38,6 @@
             (,(r 0 19) 0         0         0         0         0)
             (,(r 0 0)  ,(r 0 16) 0         0         0         0)))
         )))
-
-;; fill cells with options
-(define (fill-possibilits k i j)
-  (if (= i (length (matrix-row k 0)))
-    k
-    (if (= j (array-length k))
-      (fill-possibilits k (+ i 1) 0)
-      (if (list? (matrix-get k i j))
-        (fill-possibilits k i (+ j 1))
-        (begin 
-          (matrix-set! k i j '(1 2 3 4 5 6 7 8 9))
-          (fill-possibilits k i (+ j 1))
-        )
-      )
-    )
-  )
-)
 
 ;; fill possibilits in row of kakuro
 (define (fill-row-kakuro k . opt-i)
@@ -128,9 +111,9 @@
     #f
     (if (= j (length (matrix-row k 0)))
       (kakuro-next-possible k (+ i 1) 0)
-      (if (= (length (matrix-get k i j)) 1)
+      (if (= (length (matrix-ref k i j)) 1)
         (kakuro-next-possible k i (+ j 1))
-        (if (eq? (car (matrix-get k i j)) 'restriction)
+        (if (eq? (car (matrix-ref k i j)) 'restriction)
           (kakuro-next-possible k i (+ j 1))
           (list i j)
         )
@@ -196,7 +179,7 @@
 )
 
 (define (main)
-  (show-matrix (fill-possibilits (make-kakuro 0) 0 0) 0)
+  ;(matrix-display (fill-possibilits (make-kakuro 0) 0 0) 0)
   (display (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))
   (display (length (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0))))
   (display (length (car (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))))
@@ -219,16 +202,16 @@
   (display "\nMaybe\n")
   (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 5)) #t))
   (display "\nTest Fill Row\n")
-  (show-matrix (list->matrix (fill-row-kakuro (make-kakuro 0))))
+  (matrix-display (list->matrix (fill-row-kakuro (make-kakuro 0))))
   (display "\nTest Fill Columns\n")
   ;(display (fill-in-restr (split-list (matrix-col (make-kakuro 0) 0)) #f))
   ;(display (fill-col-kakuro (make-kakuro 0)))
-  (show-matrix (fill-col-kakuro (make-kakuro 0)))
+  (matrix-display (fill-col-kakuro (make-kakuro 0)))
   (display "\nTest Fill All\n")
-  (show-matrix (prune-kakuro (make-kakuro 0)))
+  (matrix-display (prune-kakuro (make-kakuro 0)))
 
   (display "\nTest Shuffle\n")
-  (show-matrix (matrix-map shuffle-kakuro (prune-kakuro (make-kakuro 0))))
+  (matrix-display (matrix-map shuffle-kakuro (prune-kakuro (make-kakuro 0))))
 
   (display "\nTest NextPossible\n")
   (display (kakuro-next-possible (prune-kakuro (make-kakuro 0)) 3 2))
@@ -239,7 +222,7 @@
   (display (purge-line (map shuffle-kakuro (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3)) #t)) '(5 6)))
   (newline)
   (display "\nremove (5 6) from line 3 column 1\n")
-  (show-matrix (kakuro-rem-possibles (prune-kakuro (make-kakuro 0)) 3 1 '(5 6)) )
+  (matrix-display (kakuro-rem-possibles (prune-kakuro (make-kakuro 0)) 3 1 '(5 6)) )
 
   (display "\nTest Solver\n")
   (display (apply + (map car '((4) (3) (2)))))
