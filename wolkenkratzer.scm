@@ -1,7 +1,9 @@
 ;; imports
 (load "backtrack.scm") ;; solve
-(load "matrix.scm") ;; make-matrix, matrix-ref, matrix-set!, matrix-find-pos, matrix-map-pos
-(load "utilisp.scm") ;; every, range
+(load "matrix.scm") ;; make-matrix, matrix-ref, matrix-set!, matrix-find-pos,
+                    ;; matrix-map, matrix-copy, matrix-for-each-pos-in-row,
+                    ;; matrix-for-each-pos-in-col
+(load "utilisp.scm") ;; every, range, shuffle
 
 ;; example from https://www.janko.at/Raetsel/Wolkenkratzer/072.a.htm
 ; instance restrictions
@@ -67,7 +69,7 @@
                     (if (> curr tallest) (+ count 1) count)
                     (max tallest curr)))))))
 
-;; find a position with an ambiguity, must return false if there isn't any
+;; find a position with an ambiguity, false if there isn't
 (define (find-ambiguous board)
   (matrix-find-pos (lambda (i j) (list? (matrix-ref board i j))) board))
 
@@ -75,33 +77,42 @@
 ;; backtrack and keep solving with all the other possibilities
 (define (collapse try board fail position)
   (let* ((i (car position)) (j (cadr position))
-         (possibilities (matrix-ref board i j)))
-    (matrix-set! board i j (car possibilities))
-    (try (prune board i j)
+         (possibilities (matrix-ref board i j))
+         (checkpoint (matrix-copy board))) ; save previous board
+    (prune! board i j (car possibilities))
+    (try board
          (lambda ()
-           (matrix-set! board i j (cdr possibilities))
-           (try board fail)))))
+           ; restore previous board and reduce possibility space
+           (matrix-set! checkpoint i j (cdr possibilities))
+           (try checkpoint fail)))))
 
 ;; prune the board with respect to the cell in given position
-;; @FIXME: unnecessarily n^2
-(define (prune board y x)
-  (let ((cell (matrix-ref board y x)))
-    (matrix-map-pos
-      (lambda (i j)
-        (let ((others (matrix-ref board i j)))
-          (if (or (not (list? others))
-                  (and (= i y) (= j x))
-                  (and (not (= i y)) (not (= j x))))
-              others
-              (filter (lambda (value) (not (= value cell))) others))))
-      board)))
+(define (prune! board y x cell)
+  ;; fix that cell
+  (matrix-set! board y x cell)
+  ;; remove it from the rest of the row
+  (matrix-for-each-pos-in-row
+    (lambda (i j)
+      (let ((others (matrix-ref board i j)))
+        (if (and (not (= j x)) (list? others))
+            (matrix-set! board i j
+              (filter (lambda (value) (not (= value cell))) others)))))
+    board y)
+  ;; as well as from the rest of the column
+  (matrix-for-each-pos-in-col
+    (lambda (i j)
+      (let ((others (matrix-ref board i j)))
+        (if (and (not (= i y)) (list? others))
+            (matrix-set! board i j
+              (filter (lambda (value) (not (= value cell))) others)))))
+    board x))
 
 ;; main program
-(let ((solution
-  (solve (make-matrix n n (range lo hi))
-         possible?
-         find-ambiguous
-         collapse)))
-    (display solution)
-    (newline)
-    (exit 0))
+(let* ((board (make-matrix n n (range lo hi)))
+       (solution (solve (matrix-map shuffle board)
+                        possible?
+                        find-ambiguous
+                        collapse)))
+  (matrix-display solution)
+  (newline)
+  (exit 0))

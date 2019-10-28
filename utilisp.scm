@@ -31,14 +31,6 @@
     (vector-shuffle! vec)
     (vector->list vec)))
 
-
-;; @TODO: check usage
-
-;; tail-recursive L->R fold (not in Guile by default)
-(define (fold-left proc init lst)
-  (if (null? lst) init
-      (fold-left proc (proc init (car lst)) (cdr lst))))
-
 ;; return list with x as its last element, like a "reverse cons"
 (define (snoc list x)
   (append list `(,x)))
