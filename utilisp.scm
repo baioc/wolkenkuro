@@ -11,6 +11,23 @@
 (define (snoc list x)
   (append list `(,x)))
 
+;; return the list ori without any elements in the list rem
+(define (purge rem ori)
+  ; (define delete remove) ; others' remove <=> Guile's delete
+  (if (null? rem) ori
+      (purge (cdr rem) (delete (car rem) ori))))
+
+;; remove of ich possibilits the list of values
+(define (purge-line line rem)
+  (if (null? line)
+    '()
+    (if (eq? (caar line) 'restriction)
+      (cons (car line) (purge-line (cdr line) rem))
+      (cons (purge rem (car line)) (purge-line (cdr line) rem))
+    )
+  )
+)
+
 ;; make a randomly shuffled list
 (define (shuffle list)
   (let ((vec (list->vector list)))

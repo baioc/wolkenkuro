@@ -58,6 +58,10 @@
     )
     ))
 
+(define (matrix-row-set! mat i row)
+  (array-set! mat row i 0))
+
+
 ;; print matrix in monitor
 (define (show-matrix mat . opt-i)
   (if (= (maybe-car opt-i 0) (array-length mat))

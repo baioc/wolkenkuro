@@ -122,6 +122,7 @@
   (list->matrix (fill-row-kakuro (fill-col-kakuro k)))
 )
 
+;;pick next position of cell that have more then one possibilit0
 (define (kakuro-next-possible k i j)
   (if (= i (array-length k))
     #f
@@ -136,6 +137,62 @@
       )
     )
   )
+)
+;;remove from colum i and row j, elements in rem from possibles cells
+(define (kakuro-rem-possibles k i j rem)
+  (matrix-col-set! k j (purge-line (matrix-col k j) rem))
+  (matrix-row-set! k i (purge-line (matrix-row k i) rem))
+  k
+)
+
+;;verify if kakuro a line of kakuro is solved
+(define (kakuro-solver-line line isrow)
+  (if (null? line)
+    #t
+    (if isrow
+      (if (= (restriction-row (caar line)) 0)
+        (kakuro-solver-line (cdr line) isrow)
+        (if (= (restriction-row (caar line)) (apply + (map car (cdar line))))
+          (kakuro-solver-line (cdr line) isrow)
+          #f
+        )
+      )
+      (if (= (restriction-col (caar line)) 0)
+        (kakuro-solver-line (cdr line) isrow)
+        (if (= (restriction-col (caar line)) (apply + (map car (cdar line))))
+          (kakuro-solver-line (cdr line) isrow)
+          #f
+        )
+      )
+    )
+  )
+)
+
+;;verify wich restriction by column
+(define (kakuro-solver-col k . opt-j)
+  (if (= (maybe-car opt-j 0) (length (matrix-row k 0)))
+    #t
+    (if (kakuro-solver-line (split-line (matrix-col k (maybe-car opt-j 0))) #f)
+      (kakuro-solver-col k (+ (maybe-car opt-j 0) 1))
+      #f
+    )
+  )
+)
+
+;;verify wich restriction by row
+(define (kakuro-solver-row k . opt-i)
+  (if (= (maybe-car opt-i 0) (array-length k))
+    #t
+    (if (kakuro-solver-line (split-line (matrix-row k (maybe-car opt-i 0))) #t)
+      (kakuro-solver-row k (+ (maybe-car opt-i 0) 1))
+      #f
+    )
+  )
+)
+
+;;verify if kakuro is valid
+(define (kakuro-solver k)
+  (and (kakuro-solver-row k) (kakuro-solver-col k))
 )
 
 (define (main)
@@ -175,6 +232,18 @@
 
   (display "\nTest NextPossible\n")
   (display (kakuro-next-possible (prune-kakuro (make-kakuro 0)) 3 2))
+
+  (display "\nTest Remove value from list of list\n")
+  (display (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3)) #t))
+  (newline)
+  (display (purge-line (map shuffle-kakuro (fill-in-restr (split-list (matrix-row (make-kakuro 0) 3)) #t)) '(5 6)))
+  (newline)
+  (display "\nremove (5 6) from line 3 column 1\n")
+  (show-matrix (kakuro-rem-possibles (prune-kakuro (make-kakuro 0)) 3 1 '(5 6)) )
+
+  (display "\nTest Solver\n")
+  (display (apply + (map car '((4) (3) (2)))))
+
 
 )
 (main)
