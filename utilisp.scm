@@ -39,9 +39,9 @@
 (define (purge-line line rem)
   (if (null? line)
     '()
-    (if (eq? (caar line) 'restriction)
+    (if (restriction? (car line))
       (cons (car line) (purge-line (cdr line) rem))
-      (cons (purge rem (car line)) (purge-line (cdr line) rem))
+      (cons (purge (list rem) (car line)) (purge-line (cdr line) rem))
     )
   )
 )
@@ -54,7 +54,7 @@
 
 ;; make a randomly shuffled list
 (define (shuffle-kakuro list)
-  (if (eq? (car list) 'restriction)
+  (if (restriction? list)
     list
     (let ((vec (list->vector list)))
       (vector-shuffle! vec)
@@ -69,28 +69,17 @@
 
 ;; split list in cells that are list
 (define (split-list l)
-  ;(display l)
-  ;(newline)
-  (if (null? l)
-    '()
-    (if (pair? (car l))
-      (if (eq? (caar l) 'restriction)
-        (cons (cons (car l) (split-list-aux (cdr l))) (split-list (cdr l)))
-        (split-list (cdr l))
-      )
-      (split-list (cdr l))
-    )))
+  (cond ((null? l) '())
+        ((restriction? (car l))
+          (cons (cons (car l)
+                      (split-list-aux (cdr l)))
+                (split-list (cdr l))))
+        (else (split-list (cdr l)))))
 
 (define (split-list-aux l)
-  (if (null? l)
-    '()
-    (if (pair? (car l))
-      (if (eq? (caar l) 'restriction)
-        '()
-        (cons (car l) (split-list-aux (cdr l)))
-      )
-      (cons (car l) (split-list-aux (cdr l)))
-    )))
+  (if (or (null? l) (restriction? (car l))) '()
+      (cons (car l)
+            (split-list-aux (cdr l)))))
 
 ;; make a list with the limitations of quantity of cells and the sum
 (define (return-options n sum invert)
@@ -100,7 +89,7 @@
       (make-list 1 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) )))
     )
     (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45)(- n 2) )) 9)
-    ;(make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9) 
+    ;(make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9)
   )
 )
 
