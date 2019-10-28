@@ -7,6 +7,10 @@
 (define (make-matrix m n . opt-v)
   (make-array (maybe-car opt-v #f) m n))
 
+;; matrix height
+(define (matrix-length mat)
+  (car (array-dimensions mat)))
+
 ;; get the jth element from ith row of a matrix
 (define (matrix-ref mat i j)
   (array-ref mat i j))
@@ -80,7 +84,7 @@
 (define (matrix-col-set! mat j column . opt-i)
   (if (null? column)
     '()
-    (begin 
+    (begin
       (matrix-set! mat (maybe-car opt-i 0) j (car column))
       (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
     )
