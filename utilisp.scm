@@ -81,24 +81,37 @@
       (cons (car l)
             (split-list-aux (cdr l)))))
 
-;; make a list with the limitations of quantity of cells and the sum
-(define (return-options n sum invert)
-  (if (not invert)
-    (if (> (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9)
-      (make-list (+ 1  (- (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2))) 9) ) 9)
-      (make-list 1 (- sum (list-ref '(1 3 6 10 15 21 28 36 45) (- n 2) )))
-    )
-    (make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45)(- n 2) )) 9)
-    ;(make-list (- sum (list-ref '(9 17 24 30 35 39 42 44 45) (- n 2) )) 9)
-  )
-)
 
-;; Make a list starts in n until k
-(define (make-list n k)
-  (if (> n k)
-    '()
-    (cons n (make-list (+ n 1) k))
-  )
+;; make a list with the limitations of quantity of cells and the su,
+(define (return-options restr n)
+  (define ascending '(1 3 6 10 15 21 28 36 45))
+  (define descending '(9 17 24 30 35 39 42 44 45))
+
+  (define idx (- n 2))
+
+  (define partial-ascending (list-ref ascending idx))
+  (define lower-ascending 1)
+  (define higher-ascending (min 9 (- restr partial-ascending)))
+
+  (define partial-descending (list-ref descending idx))
+  (define lower-descending (max 1 (- restr partial-descending)))
+  (define higher-descending 9)
+
+  (range (max lower-ascending lower-descending)
+         (min higher-ascending higher-descending))
+
+  ; (if (not invert)
+  ;   (if (> (- restr (list-ref ascending (- n 2))) 9)
+  ;     (range 1 9)
+  ;     ; (make-list (+ 1  (- (- restr (list-ref ascending (- n 2))) 9) ) 9)
+  ;     (range 1 (- restr (list-ref ascending (- n 2) )))
+  ;   )
+  ;   (if (< (- restr (list-ref descending (- n 2))) 1)
+  ;     (range 1 9)
+  ;     (range (- restr (list-ref descending (- n 2))) 9)
+  ;     ; (make-list (abs (- restr (list-ref descending (- n 2)))) 9)
+  ;   )
+  ; )
 )
 
 (define (correct-val cell val)
@@ -108,7 +121,7 @@
       cell
       (if (= (length val) 1)
         val
-        (make-list (max (car cell) (car val)) (min (list-ref cell (- (length cell) 1)) (list-ref val (- (length val) 1))))
+        (range (max (car cell) (car val)) (min (list-ref cell (- (length cell) 1)) (list-ref val (- (length val) 1))))
       )
     )
   )

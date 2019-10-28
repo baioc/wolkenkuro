@@ -72,9 +72,9 @@
     line
     (if (null? line)
       line
-      (if (> (/ restr (length line)) 5) ;; pick mean, sum of restriction by qt of cells
-        (fill-cells line (return-options (length line) restr #t))
-        (fill-cells line (return-options (length line) restr #f))
+      (if (> (round (/ restr (length line))) 5) ;; pick mean, sum of restriction by qt of cells
+        (fill-cells line (return-options restr (length line)))
+        (fill-cells line (return-options restr (length line)))
       )
     )
   )
@@ -247,19 +247,19 @@
   ; (matrix-display (kakuro-rem-possibles (prune-kakuro (make-kakuro 0)) 3 1 '(5 6)) )
 
   ; (display "\nTest Solver\n")
-  (matrix-display (list->matrix (fill-row-kakuro (make-kakuro 1))))
-  (newline)(newline)
-  (matrix-display (fill-col-kakuro (make-kakuro 1)))
-  (newline)(newline)
-  (matrix-display (prune-kakuro (make-kakuro 1)))
-  (newline)(newline)
-  ; (cond
-  ;   ((solve (set-kakuro 1)
-  ;           kakuro-solver
-  ;           ambiguous?
-  ;           collapse)
-  ;    => matrix-display)
-  ;   (else (display "Impossible\n")))
+  ; (matrix-display (list->matrix (fill-row-kakuro (make-kakuro 1))))
+  ; (newline)(newline)
+  ; (matrix-display (fill-col-kakuro (make-kakuro 1)))
+  ; (newline)(newline)
+  ; (matrix-display (prune-kakuro (make-kakuro 1)))
+  ; (newline)(newline)
+  (cond
+    ((solve (set-kakuro 1)
+            kakuro-solver
+            ambiguous?
+            collapse)
+     => matrix-display)
+    (else (display "Impossible\n")))
 )
 
 (define (set-kakuro n)
