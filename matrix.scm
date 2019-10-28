@@ -58,8 +58,14 @@
     )
     ))
 
-(define (matrix-row-set! mat i row)
-  (array-set! mat row i 0))
+;; set values of ith row to those in the given list
+(define (matrix-row-set! m i row)
+  (define (iter j seq)
+    (if (not (null? seq))
+        (begin
+          (matrix-set! m i j (car seq))
+          (iter (+ j 1) (cdr seq)))))
+  (iter 0 row))
 
 
 ;; print matrix in monitor
