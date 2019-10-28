@@ -30,7 +30,7 @@
 (define (make-kakuro n)
   (define r make-restriction)
   (cond ((= n 0)
-        (list->matrix 
+        (list->matrix
           `((,(r 0 0)  ,(r 27 0) ,(r 15 0) ,(r 13 0) ,(r 35 0) ,(r 0 0))
             (,(r 0 28) 0         0         0         0         ,(r 12 0))
             (,(r 0 16) 0         0         0         0         0)
@@ -45,9 +45,9 @@
     k
     (if (= j (array-length k))
       (fill-possibilits k (+ i 1) 0)
-      (if (list? (matrix-get k i j))
+      (if (list? (matrix-ref k i j))
         (fill-possibilits k i (+ j 1))
-        (begin 
+        (begin
           (matrix-set! k i j '(1 2 3 4 5 6 7 8 9))
           (fill-possibilits k i (+ j 1))
         )
