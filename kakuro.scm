@@ -187,6 +187,34 @@
           (else #f)))))
 
 
+;; ====================
+;; === KAKURO TOOLS ===
+;; ====================
+
+;; split list in cells that are list
+(define (split-list l)
+  (cond ((null? l) '())
+        ((restriction? (car l))
+          (cons (cons (car l)
+                      (split-list-aux (cdr l)))
+                (split-list (cdr l))))
+        (else (split-list (cdr l)))))
+
+(define (split-list-aux l)
+  (if (or (null? l) (restriction? (car l))) '()
+      (cons (car l)
+            (split-list-aux (cdr l)))))
+
+(define (shuffle-kakuro list)
+  (if (restriction? list) list (shuffle list)))
+
+(define (set-kakuro n)
+  (let ((kakuro (kakuro-ref n)))
+    (restriction-fill! kakuro)
+    kakuro))
+    ; (matrix-map shuffle-kakuro kakuro)))
+
+
 (define (main)
   ; ;(matrix-display (fill-possibilits (kakuro-ref 0) 0 0) 0)
   ; (display (split-list '((restriction 0 1) 0 0 0 (restriction 0 2) 0 0)))
@@ -240,22 +268,15 @@
   ; (newline)(newline)
   ; (matrix-display (restriction-fill! (kakuro-ref 1)))
   ; (newline)(newline)
-  (cond
-    ((solve (set-kakuro 0)
-            kakuro-solver
-            kakuro-ambiguous?
-            kakuro-collapse)
-     => matrix-display)
-    (else (display "Impossible\n")))
+
+  (matrix-display (set-kakuro 1))
+  ; (cond
+  ;   ((solve (set-kakuro 1)
+  ;           kakuro-solver
+  ;           kakuro-ambiguous?
+  ;           kakuro-collapse)
+  ;    => matrix-display)
+  ;   (else (display "Impossible\n")))
 )
-
-(define (set-kakuro n)
-  (let ((kakuro (kakuro-ref n)))
-    (restriction-fill! kakuro)
-    (matrix-map shuffle-kakuro kakuro)))
-
-;; make a randomly shuffled list
-(define (shuffle-kakuro list)
-  (if (restriction? list) list (shuffle list)))
 
 (main)

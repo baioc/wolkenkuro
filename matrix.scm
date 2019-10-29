@@ -81,14 +81,14 @@
             (proc i j)
             (iter (+ i 1)))))))
 
-(define (matrix-col-set! mat j column . opt-i)
-  (if (null? column)
-    '()
-    (begin
-      (matrix-set! mat (maybe-car opt-i 0) j (car column))
-      (matrix-col-set! mat j (cdr column) (+ (maybe-car opt-i 0) 1))
-    )
-    ))
+;; set values of jth col to those in the given list
+(define (matrix-col-set! m j col)
+  (define (iter i seq)
+    (if (not (null? seq))
+        (begin
+          (matrix-set! m i j (car seq))
+          (iter (+ i 1) (cdr seq)))))
+  (iter 0 col))
 
 ;; set values of ith row to those in the given list
 (define (matrix-row-set! m i row)

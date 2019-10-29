@@ -29,54 +29,8 @@
 (define (snoc list x)
   (append list `(,x)))
 
-;; return the list ori without any elements in the list rem
-(define (purge rem ori)
-  ; (define delete remove) ; others' remove <=> Guile's delete
-  (if (null? rem) ori
-      (purge (cdr rem) (delete (car rem) ori))))
-
-;; remove of ich possibilits the list of values
-(define (purge-line line rem)
-  (if (null? line)
-    '()
-    (if (restriction? (car line))
-      (cons (car line) (purge-line (cdr line) rem))
-      (cons (purge (list rem) (car line)) (purge-line (cdr line) rem))
-    )
-  )
-)
-
 ;; make a randomly shuffled list
 (define (shuffle list)
   (let ((vec (list->vector list)))
     (vector-shuffle! vec)
     (vector->list vec)))
-
-;; make a randomly shuffled list
-(define (shuffle-kakuro list)
-  (if (restriction? list)
-    list
-    (let ((vec (list->vector list)))
-      (vector-shuffle! vec)
-      (vector->list vec))))
-
-
-;; return the list ori without any elements in the list rem
-(define (purge rem ori)
-  ; (define delete remove) ; others' remove <=> Guile's delete
-  (if (null? rem) ori
-      (purge (cdr rem) (delete (car rem) ori))))
-
-;; split list in cells that are list
-(define (split-list l)
-  (cond ((null? l) '())
-        ((restriction? (car l))
-          (cons (cons (car l)
-                      (split-list-aux (cdr l)))
-                (split-list (cdr l))))
-        (else (split-list (cdr l)))))
-
-(define (split-list-aux l)
-  (if (or (null? l) (restriction? (car l))) '()
-      (cons (car l)
-            (split-list-aux (cdr l)))))
