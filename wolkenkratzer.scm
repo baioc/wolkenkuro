@@ -95,10 +95,63 @@
   (solve (matrix-map shuffle (make-matrix n n (range lo hi)))
          may-allow? find-amb-terrain consider-construction))
 
+(define (wolkenkratzer-prune mat n upper left bottom right)
+  (prune-vs mat n upper  #t + 0) ;row 0
+  (newline)
+  (matrix-display mat)
+  (newline)
+  (prune-vs mat n left   #f + 0) ;column 0
+  (prune-vs mat n bottom #t - n) ;row n
+  (prune-vs mat n right  #f - n) ;column n
+)
+
+
+(define (prune-vs mat n vs iscol op b)
+  (if (null? vs)
+    '()
+    (begin 
+      (cond 
+        ((= (caar vs) 1) (prune-begin mat (cadr vs) iscol op))
+        ((= (caar vs) n) (prune-line mat (cadr vs) iscol op))
+        (else (prune-aux mat
+                         (- (caar vs) 1)
+                         (range (- n (- (- caar vs) 1)) n)
+                         (cadr vs)
+                         iscol
+                         op
+                         b))
+      )
+      (prune-vs mat n (cdr vs) iscol op b)
+    )
+  )
+)
+
+(define (prune-begin mat pos iscol isinvert)
+  mat
+)
+    
+(define (prune-line mat pos iscol isinvert)
+  mat
+)
+
+(define (prune-aux mat n rem-list a-pos iscol op b)
+  (define pos (if iscol '(a-pos b) '(b a-pos) ))
+  (if (= n 0)
+    #f
+    (begin
+      (matrix-set! (car pos) (cdr pos)  (purge (matrix-get! i j) rem-list))
+      (prune-aux mat (- n 1) (cdr rem-list) a-pos iscol op (op b 1)))))
+
 ;; format input restrictions
 (define (restriction-view-map seq)
   (filter (lambda (pair) (not (= (car pair) 0)))
           (map cons seq (range 0 (- (length seq) 1)))))
+
+;; return the list ori without any elements in the list rem
+(define (purge rem ori)
+  ; (define delete remove) ; others' remove <=> Guile's delete
+  (if (null? rem) ori
+      (purge (cdr rem) (delete (car rem) ori))))
 
 ;; main script
 (define (main)
@@ -124,9 +177,14 @@
     (set! lo (if (= hi n) 1 0))
 
     (display "Looking for a solution...\n")
-    (cond ((wolkenkratzer n upper left bottom right lo hi) => matrix-display)
-          (else (display "Impossible!")))
-    (newline)))
+    ;(cond ((wolkenkratzer n upper left bottom right lo hi) => matrix-display)
+    ;      (else (display "Impossible!")))
+    (newline)
+    (newline)
+    (display (range (- 5 (- 2 2)) 5))
+ 
+    (wolkenkratzer-prune (make-matrix n n (range lo hi)) n upper left bottom right)
+    ))
 
 (main)
 (exit 0)
