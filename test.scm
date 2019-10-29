@@ -1,7 +1,7 @@
 ;; imports
-(load "backtrack.scm") ;; solve
-(load "vector.scm") ;; vector-find-pos, vector-every-pos, vector-map-pos, vector-map
+(load "vector.scm")
 (load "utilisp.scm") ;; shuffle
+(load "backtrack.scm")
 
 
 ;;; a simple example

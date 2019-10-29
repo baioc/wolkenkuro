@@ -229,7 +229,7 @@
         k i)
       )
     k 0)
-  ) 
+  )
 
 (define (solve-kakuro? n)
   (newline)

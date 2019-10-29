@@ -3,6 +3,7 @@
 
 (load "utilisp.scm") ;; maybe-car, identity
 
+
 ;; make a m*n matrix filled with a default value v
 (define (make-matrix m n . opt-v)
   (make-array (maybe-car opt-v #f) m n))
@@ -47,34 +48,31 @@
 
 ;; get the ith row of a matrix as a list (in order), starting from column j|0
 (define (matrix-row mat i . opt-j)
-  (let* ((dim (array-dimensions mat))
-         (n (cadr dim)))
+  (let* ((dim (array-dimensions mat)) (n (cadr dim)))
     (let iter ((row '()) (idx (maybe-car opt-j 0)))
       (if (>= idx n) row
           (iter (snoc row (matrix-ref mat i idx)) (+ idx 1))))))
 
-;; get the jth column of a matrix as a list (in order), starting from row i|0
-(define (matrix-col mat j . opt-i)
-  (let* ((dim (array-dimensions mat))
-         (m (car dim)))
-    (let iter ((col '()) (idx (maybe-car opt-i 0)))
-      (if (>= idx m) col
-          (iter (snoc col (matrix-ref mat idx j)) (+ idx 1))))))
-
 ;; applies proc to every position (i j) of ith row
 (define (matrix-for-each-pos-in-row proc mat i)
-  (let* ((dim (array-dimensions mat))
-         (n (cadr dim)))
+  (let* ((dim (array-dimensions mat)) (n (cadr dim)))
     (let iter ((j 0))
       (if (< j n)
           (begin
             (proc i j)
             (iter (+ j 1)))))))
 
+
+;; get the jth column of a matrix as a list (in order), starting from row i|0
+(define (matrix-col mat j . opt-i)
+  (let ((m (matrix-length mat)))
+    (let iter ((col '()) (idx (maybe-car opt-i 0)))
+      (if (>= idx m) col
+          (iter (snoc col (matrix-ref mat idx j)) (+ idx 1))))))
+
 ;; applies proc to every position (i j) of jth column
 (define (matrix-for-each-pos-in-col proc mat j)
-  (let* ((dim (array-dimensions mat))
-         (m (car dim)))
+  (let ((m (matrix-length mat)))
     (let iter ((i 0))
       (if (< i m)
           (begin
@@ -83,21 +81,19 @@
 
 ;; set values of jth col to those in the given list
 (define (matrix-col-set! m j col)
-  (define (iter i seq)
+  (let iter ((i 0) (seq col))
     (if (not (null? seq))
         (begin
           (matrix-set! m i j (car seq))
-          (iter (+ i 1) (cdr seq)))))
-  (iter 0 col))
+          (iter (+ i 1) (cdr seq))))))
 
 ;; set values of ith row to those in the given list
 (define (matrix-row-set! m i row)
-  (define (iter j seq)
+  (let iter ((j 0) (seq row))
     (if (not (null? seq))
         (begin
           (matrix-set! m i j (car seq))
-          (iter (+ j 1) (cdr seq)))))
-  (iter 0 row))
+          (iter (+ j 1) (cdr seq))))))
 
 ;; checks if every matrix position satisfies a predicate
 (define (matrix-every-pos pred mat)
