@@ -111,12 +111,12 @@
     '()
     (begin 
       (cond 
-        ((= (caar vs) 1) (prune-begin mat (cadr vs) iscol op))
-        ((= (caar vs) n) (prune-line mat (cadr vs) iscol op))
+        ((= (caar vs) 1) (prune-begin mat (cdar vs) iscol op))
+        ((= (caar vs) n) (prune-line mat (cdar vs) iscol op))
         (else (prune-aux mat
                          (- (caar vs) 1)
-                         (range (- n (- (- caar vs) 1)) n)
-                         (cadr vs)
+                         (range (- n (- (caar vs) 1)) n)
+                         (cdar vs)
                          iscol
                          op
                          b))
@@ -131,7 +131,7 @@
 )
     
 (define (prune-line mat pos iscol isinvert)
-  mat
+  #t
 )
 
 (define (prune-aux mat n rem-list a-pos iscol op b)
@@ -139,7 +139,7 @@
   (if (= n 0)
     #f
     (begin
-      (matrix-set! (car pos) (cdr pos)  (purge (matrix-get! i j) rem-list))
+      (matrix-set! (car pos) (cdr pos)  (purge (matrix-ref mat (car pos) (cdr pos) ) rem-list))
       (prune-aux mat (- n 1) (cdr rem-list) a-pos iscol op (op b 1)))))
 
 ;; format input restrictions
