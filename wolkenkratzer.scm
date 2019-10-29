@@ -40,7 +40,7 @@
   (matrix-for-each-pos-in-row
     (lambda (i j)
       (let ((others (matrix-ref board i j)))
-        (if (and (not (= j x)) (list? others))
+        (if (list? others)
             (matrix-set! board i j
               (filter (lambda (value) (not (= value cell))) others)))))
     board y)
@@ -48,7 +48,7 @@
   (matrix-for-each-pos-in-col
     (lambda (i j)
       (let ((others (matrix-ref board i j)))
-        (if (and (not (= i y)) (list? others))
+        (if (list? others)
             (matrix-set! board i j
               (filter (lambda (value) (not (= value cell))) others)))))
     board x))
