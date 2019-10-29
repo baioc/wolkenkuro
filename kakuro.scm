@@ -211,9 +211,42 @@
 (define (set-kakuro n)
   (let ((kakuro (kakuro-ref n)))
     (restriction-fill! kakuro)
-    kakuro))
-    ; (matrix-map shuffle-kakuro kakuro)))
+    kakuro
+    (matrix-map shuffle-kakuro kakuro)))
 
+(define (kakuro-display k)
+  (matrix-for-each-pos-in-col
+    (lambda (i _)
+      (if (not (= i 0))
+          (newline)
+          (display ""))
+      (matrix-for-each-pos-in-row
+        (lambda (_ j)
+          (if (not (= j 0)) (display ""))
+            (if (not (restriction? (matrix-ref k i j)))
+              (begin (display "     ") (display (matrix-ref k i j)) (display "      "))
+              (begin (display " ") (display (matrix-ref k i j)) (display "  "))))
+        k i)
+      )
+    k 0)
+  ) 
+
+(define (solve-kakuro? n)
+  (newline)
+  (display "====== Solving Kakuro Board ")
+  (display n)
+  (display " ======")
+  (newline)
+  (newline)
+  (cond
+    ((solve (set-kakuro n)
+            kakuro-solver
+            kakuro-ambiguous?
+            kakuro-collapse)
+     => kakuro-display)
+    (else (display "Impossible\n")))
+  (newline)
+)
 
 (define (main)
   ; ;(matrix-display (fill-possibilits (kakuro-ref 0) 0 0) 0)
@@ -269,7 +302,9 @@
   ; (matrix-display (restriction-fill! (kakuro-ref 1)))
   ; (newline)(newline)
 
-  (matrix-display (set-kakuro 1))
+  ;(matrix-display (set-kakuro 1))
+  (solve-kakuro? 0)
+  (solve-kakuro? 1)
   ; (cond
   ;   ((solve (set-kakuro 1)
   ;           kakuro-solver
