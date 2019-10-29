@@ -34,7 +34,7 @@
 (define (kakuro-ref n)
   (define r make-restriction)
   (cond ((= n 0)
-         (list->matrix
+         (list->matrix ;; https://www.janko.at/Raetsel/Kakuro/283.a.htm
            `((,(r 0 0)  ,(r 27 0) ,(r 15 0) ,(r 13 0) ,(r 35 0) ,(r 0 0))
              (,(r 0 28) 0         0         0         0         ,(r 12 0))
              (,(r 0 16) 0         0         0         0         0)
@@ -42,7 +42,15 @@
              (,(r 0 19) 0         0         0         0         0)
              (,(r 0 0)  ,(r 0 26) 0         0         0         0))))
         ((= n 1)
-         (list->matrix
+         (list->matrix ;; https://www.janko.at/Raetsel/Kakuro/091.a.htm
+           `((,(r 0 0)  ,(r 12 0) ,(r 21 0)  ,(r 0 0)   ,(r 16 0) ,(r 13 0))
+             (,(r 0 17) 0         0          ,(r 22 11) 0         0        )
+             (,(r 0 15) 0         0          0          0         0        )
+             (,(r 0 0)  ,(r 4 13) 0          0          0         ,(r 10 0))
+             (,(r 0 18) 0         0          0          0         0        )
+             (,(r 0 10) 0         0         ,(r 0 14)   0         0        ))))
+        ((= n 2)
+         (list->matrix ;; https://www.janko.at/Raetsel/Kakuro/246.a.htm
            `((,(r 0 0)  ,(r 8 0)  ,(r 11 0)  ,(r 37 0) ,(r 0 0)  ,(r 0 0)  ,(r 0 0)   ,(r 14 0) ,(r 6 0))
              (,(r 0 24) 0         0          0         ,(r 0 0)  ,(r 0 0)  ,(r 39 12) 0         0       )
              (,(r 0 9)  0         0          0         ,(r 22 0) ,(r 29 9) 0          0         0       )
@@ -125,7 +133,7 @@
   (matrix-find-pos
     (lambda (i j)
       (let ((cell (matrix-ref k i j)))
-        (and (pair? cell) (not (restriction? cell)))))
+        (and (not (restriction? cell)) (pair? cell))))
     k))
 
 ;; try some possibility in a specific position of the board, providing a way to
@@ -135,21 +143,37 @@
          (possibilities (matrix-ref board i j))
          (checkpoint (matrix-copy board))) ; save previous board
     (fix-cell! board i j (car possibilities))
+    ; (display "\ntrying:\n")
+    ; (kakuro-display board)
     (try board
          (lambda ()
            ; restore previous board and reduce possibility space
            (matrix-set! checkpoint i j (cdr possibilities))
+          ;  (display "oops! back to:\n")
+          ;  (kakuro-display checkpoint)
            (try checkpoint fail)))))
 
 ;; fix a cell in the board with respect to the cell in given position
-(define (fix-cell! board i j cell)
-  (define (purge-kakuro i j)
-    (let ((others (matrix-ref board i j)))
-      (if (and (list? others) (not (restriction? others)))
-          (matrix-set! board i j (delete cell others)))))
-  (matrix-set! board i j cell) ;; fix that cell
-  (matrix-for-each-pos-in-row purge-kakuro board i)  ;; remove it from the rest of the row
-  (matrix-for-each-pos-in-col purge-kakuro board j)) ;; as well as from the rest of the column
+(define (fix-cell! board y x cell)
+  (define (purge-kakuro-row! i j)
+    (if (>= j (matrix-length board)) 'done
+        (let ((others (matrix-ref board i j)))
+          (if (restriction? others) 'done
+              (begin
+                (if (list? others)
+                    (matrix-set! board i j (delete cell others)))
+                (purge-kakuro-row! i (+ j 1)))))))
+  (define (purge-kakuro-col! i j)
+    (if (>= i (matrix-length board)) 'done
+        (let ((others (matrix-ref board i j)))
+          (if (restriction? others) 'done
+              (begin
+                (if (list? others)
+                    (matrix-set! board i j (delete cell others)))
+                (purge-kakuro-col! (+ i 1) j))))))
+  (matrix-set! board y x cell) ;; fix that cell
+  (purge-kakuro-row! y (+ x 1)) ;; purge repetitions in horizontal restriction cells
+  (purge-kakuro-col! (+ y 1) x)) ;; purge repetitions in vertical restriction cells
 
 
 ;; =====================
@@ -158,33 +182,45 @@
 
 ;; verify if kakuro is valid
 (define (kakuro-solver k)
-  (and (kakuro-solver-row k 0) (kakuro-solver-col k 0)))
+  (let ((first (kakuro-solver-row k 0)))
+    (cond ((not first) #f)
+          ((eq? first 'skip) #t)
+          (else (kakuro-solver-col k 0)))))
 
 ;; verify wich restriction by row
 (define (kakuro-solver-row k i)
-  (if (= i (matrix-length k)) #t
-      (if (kakuro-solver-seq (split-list (matrix-row k i)) restriction-row)
-          (kakuro-solver-row k (+ i 1))
-          #f)))
+  (cond ((= i (matrix-length k)) #t)
+        ((kakuro-solver-seq (split-list (matrix-row k i)) restriction-row)
+         => (lambda (answer)
+              (if (eq? answer 'skip) 'skip
+                  (kakuro-solver-row k (+ i 1)))))
+        (else #f)))
 
 ;;verify wich restriction by column
 (define (kakuro-solver-col k j)
-  (if (= j (length (matrix-row k 0))) #t
-      (if (kakuro-solver-seq (split-list (matrix-col k j)) restriction-col)
-          (kakuro-solver-col k (+ j 1))
-          #f)))
+  (cond ((= j (matrix-length k)) #t)
+        ((kakuro-solver-seq (split-list (matrix-col k j)) restriction-col)
+         => (lambda (answer)
+              (if (eq? answer 'skip) 'skip
+                  (kakuro-solver-col k (+ j 1)))))
+        (else #f)))
 
 ;; verify if kakuro a line of kakuro is solved
 (define (kakuro-solver-seq seq get-restr)
+  ; (display "cheking ")
+  ; (display (get-restr (car (maybe-car seq `(,(make-restriction '- '-))))))
+  ; (display " -> ")
+  ; (display (if (null? seq) '- (cdar seq)))
+  ; (newline)
   (call/cc (lambda (return)
     (cond ((null? seq) #t)
           ((let ((sum (get-restr (caar seq)))
                  (cells (cdar seq)))
-             (cond ((any null? cells) #f)
-                   ((any list? cells) (return #t))
+             (cond ((any null? cells) #f);(display " -> Found NIL\n") #f)
+                   ((any list? cells) (return 'skip));(display " -> Found AMB\n") (return 'skip))
                    (else (or (= sum 0) (= sum (apply + cells))))))
            (kakuro-solver-seq (cdr seq) get-restr))
-          (else #f)))))
+          (else #f)))));(display " -> Wrong SUM\n") #f)))))
 
 
 ;; ====================
@@ -211,7 +247,6 @@
 (define (set-kakuro n)
   (let ((kakuro (kakuro-ref n)))
     (restriction-fill! kakuro)
-    kakuro
     (matrix-map shuffle-kakuro kakuro)))
 
 (define (kakuro-display k)
@@ -235,8 +270,8 @@
   (newline)
   (display "====== Solving Kakuro Board ")
   (display n)
-  (display " ======")
-  (newline)
+  (display " ======\n")
+  ; (kakuro-display (set-kakuro n))
   (newline)
   (cond
     ((solve (set-kakuro n)
@@ -245,6 +280,7 @@
             kakuro-collapse)
      => kakuro-display)
     (else (display "Impossible\n")))
+  (newline)
   (newline)
 )
 
@@ -302,16 +338,9 @@
   ; (matrix-display (restriction-fill! (kakuro-ref 1)))
   ; (newline)(newline)
 
-  ;(matrix-display (set-kakuro 1))
   (solve-kakuro? 0)
   (solve-kakuro? 1)
-  ; (cond
-  ;   ((solve (set-kakuro 1)
-  ;           kakuro-solver
-  ;           kakuro-ambiguous?
-  ;           kakuro-collapse)
-  ;    => matrix-display)
-  ;   (else (display "Impossible\n")))
 )
 
 (main)
+(exit 0)
