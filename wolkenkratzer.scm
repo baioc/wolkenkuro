@@ -57,44 +57,40 @@
 (define (wolkenkratzer n upper left bottom right lo hi)
   ;; check if a board stands candidate to solve the problem
   (define (may-allow? board)
-    (call/cc (lambda (return)
-      ;; no blank spaces
-      (if (matrix-find-pos (lambda (i j)
-                             (null? (matrix-ref board i j)))
-                           board)
-          (return #f)
-          ;; respects all of the puzzle's constraints
-          (and (every (lambda (cnstr)
-                        (let* ((restr (car cnstr)) (row (cdr cnstr))
-                               (answer (skyscrapers-check?
-                                         restr row
-                                         (lambda (i j) (matrix-ref board i j))
-                                         0 + n)))
-                          ;; if there are ambiguities, return true to skip
-                          (if (eq? answer 'skip) (return #t) answer)))
-                      left)
-               (every (lambda (cnstr)
-                        (let ((restr (car cnstr)) (row (cdr cnstr)))
-                          (skyscrapers-check?
-                            restr row
-                            (lambda (i j) (matrix-ref board i j))
-                            (- n 1) - -1)))
-                      right)
-               (every (lambda (cnstr)
-                        (let ((restr (car cnstr)) (col (cdr cnstr)))
-                          (skyscrapers-check?
-                            restr col
-                            (lambda (i j) (matrix-ref board j i))
-                            (- n 1) - -1)))
-                      bottom)
-               (every (lambda (cnstr)
-                        (let ((restr (car cnstr)) (col (cdr cnstr)))
-                          (skyscrapers-check?
-                            restr col
-                            (lambda (i j) (matrix-ref board j i))
-                            0 + n)))
-                      upper))))))
-
+    ;; no blank spaces
+    (if (matrix-find-pos (lambda (i j)
+                           (null? (matrix-ref board i j)))
+                         board)
+        #f
+        ;; respects all of the puzzle's constraints
+        (and (every (lambda (cnstr)
+                      (let ((restr (car cnstr)) (row (cdr cnstr)))
+                        (skyscrapers-check?
+                          restr row
+                          (lambda (i j) (matrix-ref board i j))
+                          0 + n)))
+                    left)
+             (every (lambda (cnstr)
+                      (let ((restr (car cnstr)) (row (cdr cnstr)))
+                        (skyscrapers-check?
+                          restr row
+                          (lambda (i j) (matrix-ref board i j))
+                          (- n 1) - -1)))
+                    right)
+             (every (lambda (cnstr)
+                      (let ((restr (car cnstr)) (col (cdr cnstr)))
+                        (skyscrapers-check?
+                          restr col
+                          (lambda (i j) (matrix-ref board j i))
+                          (- n 1) - -1)))
+                    bottom)
+             (every (lambda (cnstr)
+                      (let ((restr (car cnstr)) (col (cdr cnstr)))
+                        (skyscrapers-check?
+                          restr col
+                          (lambda (i j) (matrix-ref board j i))
+                          0 + n)))
+                    upper))))
   ;; actually solving it
   (solve (matrix-map shuffle (make-matrix n n (range lo hi)))
          may-allow? find-amb-terrain consider-construction))
