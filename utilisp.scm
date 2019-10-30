@@ -31,10 +31,12 @@
 
 ;; make a randomly shuffled list
 (define (shuffle list)
-  (if (list? list)
-    (let ((vec (list->vector list)))
-      (vector-shuffle! vec)
-      (vector->list vec))
-    list
-  )
-)
+  (let ((vec (list->vector list)))
+    (vector-shuffle! vec)
+    (vector->list vec)))
+
+;; return the list ori without any elements in the list rem
+(define (purge rem ori)
+  ; (define delete remove) ; others' remove <=> Guile's delete
+  (if (null? rem) ori
+      (purge (cdr rem) (delete (car rem) ori))))
