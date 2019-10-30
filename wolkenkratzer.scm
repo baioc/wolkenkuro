@@ -131,9 +131,11 @@
 (define (prune-begin mat n pos-aux iscol b)
   ;;define index of cell
   (define pos (if iscol (cons b pos-aux) (cons pos-aux b)))
-  (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
-    (matrix-set! mat (car pos) (cdr pos) '(0 n))
-    (block-prune! mat (car pos) (cdr pos) n))
+  (define cell (matrix-ref mat (car pos) (cdr pos)))
+  (if (list? cell)
+    (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
+      (matrix-set! mat (car pos) (cdr pos) (list 0 n))
+      (block-prune! mat (car pos) (cdr pos) n)))
 )
   
 ;; fill how line start in 1 and goes to n
