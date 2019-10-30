@@ -91,8 +91,11 @@
                           (lambda (i j) (matrix-ref board j i))
                           0 + n)))
                     upper))))
+  (define w (make-matrix n n (range lo hi)))
+  ;; pruning board
+  (wolkenkratzer-prune w n upper left bottom right)
   ;; actually solving it
-  (solve (matrix-map shuffle (make-matrix n n (range lo hi)))
+  (solve (matrix-map shuffle w)
          may-allow? find-amb-terrain consider-construction))
 
 (define (wolkenkratzer-prune mat n upper left bottom right)
@@ -127,7 +130,7 @@
   (define pos (if iscol (cons b pos-aux) (cons pos-aux b)))
   (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
     (matrix-set! mat (car pos) (cdr pos) '(0 n))
-    (matrix-set! mat (car pos) (cdr pos) n))
+    (block-prune! mat (car pos) (cdr pos) n))
 )
     
 (define (prune-line mat n pos-aux iscol op b)
@@ -136,7 +139,7 @@
     (define pos (if iscol (cons i pos-aux) (cons pos-aux i)))
       (if (< i n)
           (begin
-            (matrix-set! mat (car pos) (cdr pos) aux)
+            (block-prune! mat (car pos) (cdr pos) aux)
             (set! aux (+ aux 1))
             (iter (op i 1)))))
 )
