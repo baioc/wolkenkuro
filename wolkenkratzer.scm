@@ -98,21 +98,22 @@
   (solve (matrix-map shuffle w)
          may-allow? find-amb-terrain consider-construction))
 
+;; prune wolkenkratzer based in all visualskyscraper
 (define (wolkenkratzer-prune mat n upper left bottom right)
   (prune-vs mat n upper  #t + 0) ;row 0
   (prune-vs mat n left   #f + 0) ;column 0
-  (prune-vs mat n bottom #t - (- n 1)) ;row n
-  (prune-vs mat n right  #f - (- n 1)) ;column n
+  (prune-vs mat n bottom #t - (- n 1)) ;row n-1
+  (prune-vs mat n right  #f - (- n 1)) ;column n-1
 )
 
-
+;; prune wolkenkratzer based in a espedifc visualskyscraper
 (define (prune-vs mat n vs iscol op b)
   (if (null? vs)
     '()
     (begin 
       (cond 
-        ((= (caar vs) 1) (prune-begin mat n (cdar vs) iscol b))
-        ((= (caar vs) n) (prune-line mat n (cdar vs) iscol op b))
+        ((= (caar vs) 1) (prune-begin mat n (cdar vs) iscol b)) ;; if the tip is 1
+        ((= (caar vs) n) (prune-line mat n (cdar vs) iscol op b)) ;; if tip is the max number
         (else (prune-aux mat
                          (- (caar vs) 1)
                          (range (- n (- (caar vs) 2)) n)
@@ -126,25 +127,31 @@
   )
 )
 
+;; define n or the 0 and n option in case of tip = 1
 (define (prune-begin mat n pos-aux iscol b)
+  ;;define index of cell
   (define pos (if iscol (cons b pos-aux) (cons pos-aux b)))
   (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
     (matrix-set! mat (car pos) (cdr pos) '(0 n))
     (block-prune! mat (car pos) (cdr pos) n))
 )
-    
+  
+;; fill how line start in 1 and goes to n
 (define (prune-line mat n pos-aux iscol op b)
-  (define aux 1)
+  (define aux 1) ;; aux that will help in fill col/row
   (let iter ((i b))
+    ;;define index of cell
     (define pos (if iscol (cons i pos-aux) (cons pos-aux i)))
       (if (< i n)
           (begin
-            (block-prune! mat (car pos) (cdr pos) aux)
-            (set! aux (+ aux 1))
+            (block-prune! mat (car pos) (cdr pos) aux) ;;fill cell with value
+            (set! aux (+ aux 1)) ;;change aux to next value
             (iter (op i 1)))))
 )
 
+;; pruning in matrix based in tip 'n'
 (define (prune-aux mat n rem-list a-pos iscol op b)
+  ;;define index of cell
   (define pos (if iscol (cons b a-pos) (cons a-pos b)))
   (if (= n 0)
     #f
