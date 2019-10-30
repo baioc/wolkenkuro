@@ -10,4 +10,4 @@ $ guile src/kakuro.scm
 
 Code is compatible with Guile, so other implementations may not be supported.
 
-The generic backtracking procedure was also tested with depth-first search on a binary tree and by solving the N-Queens problem.
+The generic backtracking procedure was also tested with DFS on a binary tree and by the N-Queens problem.
