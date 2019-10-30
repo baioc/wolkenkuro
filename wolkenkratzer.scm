@@ -97,12 +97,9 @@
 
 (define (wolkenkratzer-prune mat n upper left bottom right)
   (prune-vs mat n upper  #t + 0) ;row 0
-  (newline)
-  (matrix-display mat)
-  (newline)
   (prune-vs mat n left   #f + 0) ;column 0
-  (prune-vs mat n bottom #t - n) ;row n
-  (prune-vs mat n right  #f - n) ;column n
+  (prune-vs mat n bottom #t - (- n 1)) ;row n
+  (prune-vs mat n right  #f - (- n 1)) ;column n
 )
 
 
@@ -111,11 +108,11 @@
     '()
     (begin 
       (cond 
-        ((= (caar vs) 1) (prune-begin mat (cdar vs) iscol op))
-        ((= (caar vs) n) (prune-line mat (cdar vs) iscol op))
+        ((= (caar vs) 1) (prune-begin mat n (cdar vs) iscol b))
+        ((= (caar vs) n) (prune-line mat n (cdar vs) iscol op b))
         (else (prune-aux mat
                          (- (caar vs) 1)
-                         (range (- n (- (caar vs) 1)) n)
+                         (range (- n (- (caar vs) 2)) n)
                          (cdar vs)
                          iscol
                          op
@@ -126,20 +123,30 @@
   )
 )
 
-(define (prune-begin mat pos iscol isinvert)
-  mat
+(define (prune-begin mat n pos-aux iscol b)
+  (define pos (if iscol (cons b pos-aux) (cons pos-aux b)))
+  (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
+    (matrix-set! mat (car pos) (cdr pos) '(0 n))
+    (matrix-set! mat (car pos) (cdr pos) n))
 )
     
-(define (prune-line mat pos iscol isinvert)
-  #t
+(define (prune-line mat n pos-aux iscol op b)
+  (define aux 1)
+  (let iter ((i b))
+    (define pos (if iscol (cons i pos-aux) (cons pos-aux i)))
+      (if (< i n)
+          (begin
+            (matrix-set! mat (car pos) (cdr pos) aux)
+            (set! aux (+ aux 1))
+            (iter (op i 1)))))
 )
 
 (define (prune-aux mat n rem-list a-pos iscol op b)
-  (define pos (if iscol '(a-pos b) '(b a-pos) ))
+  (define pos (if iscol (cons b a-pos) (cons a-pos b)))
   (if (= n 0)
     #f
     (begin
-      (matrix-set! (car pos) (cdr pos)  (purge (matrix-ref mat (car pos) (cdr pos) ) rem-list))
+      (matrix-set! mat (car pos) (cdr pos)  (purge rem-list (matrix-ref mat (car pos) (cdr pos))))
       (prune-aux mat (- n 1) (cdr rem-list) a-pos iscol op (op b 1)))))
 
 ;; format input restrictions
@@ -149,9 +156,13 @@
 
 ;; return the list ori without any elements in the list rem
 (define (purge rem ori)
+  (if (list? ori)
   ; (define delete remove) ; others' remove <=> Guile's delete
-  (if (null? rem) ori
-      (purge (cdr rem) (delete (car rem) ori))))
+    (if (null? rem) ori
+        (purge (cdr rem) (delete (car rem) ori)))
+    ori
+  )
+)
 
 ;; main script
 (define (main)
@@ -177,13 +188,13 @@
     (set! lo (if (= hi n) 1 0))
 
     (display "Looking for a solution...\n")
-    ;(cond ((wolkenkratzer n upper left bottom right lo hi) => matrix-display)
-    ;      (else (display "Impossible!")))
+    (cond ((wolkenkratzer n upper left bottom right lo hi) => matrix-display)
+          (else (display "Impossible!")))
     (newline)
     (newline)
-    (display (range (- 5 (- 2 2)) 5))
+    ;(display (range (- 5 (- 2 2)) 5))
  
-    (wolkenkratzer-prune (make-matrix n n (range lo hi)) n upper left bottom right)
+    ;(wolkenkratzer-prune (make-matrix n n (range lo hi)) n upper left bottom right)
     ))
 
 (main)
