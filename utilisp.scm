@@ -31,6 +31,10 @@
 
 ;; make a randomly shuffled list
 (define (shuffle list)
-  (let ((vec (list->vector list)))
-    (vector-shuffle! vec)
-    (vector->list vec)))
+  (if (list? list)
+    (let ((vec (list->vector list)))
+      (vector-shuffle! vec)
+      (vector->list vec))
+    list
+  )
+)

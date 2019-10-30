@@ -91,14 +91,88 @@
                           (lambda (i j) (matrix-ref board j i))
                           0 + n)))
                     upper))))
+  (define w (make-matrix n n (range lo hi)))
+  ;; pruning board
+  (wolkenkratzer-prune w n upper left bottom right)
   ;; actually solving it
-  (solve (matrix-map shuffle (make-matrix n n (range lo hi)))
+  (solve (matrix-map shuffle w)
          may-allow? find-amb-terrain consider-construction))
+
+;; prune wolkenkratzer based in all visualskyscraper
+(define (wolkenkratzer-prune mat n upper left bottom right)
+  (prune-vs mat n upper  #t + 0) ;row 0
+  (prune-vs mat n left   #f + 0) ;column 0
+  (prune-vs mat n bottom #t - (- n 1)) ;row n-1
+  (prune-vs mat n right  #f - (- n 1)) ;column n-1
+)
+
+;; prune wolkenkratzer based in a espedifc visualskyscraper
+(define (prune-vs mat n vs iscol op b)
+  (if (null? vs)
+    '()
+    (begin 
+      (cond 
+        ((= (caar vs) 1) (prune-begin mat n (cdar vs) iscol b)) ;; if the tip is 1
+        ((= (caar vs) n) (prune-line mat n (cdar vs) iscol op b)) ;; if tip is the max number
+        (else (prune-aux mat
+                         (- (caar vs) 1)
+                         (range (- n (- (caar vs) 2)) n)
+                         (cdar vs)
+                         iscol
+                         op
+                         b))
+      )
+      (prune-vs mat n (cdr vs) iscol op b)
+    )
+  )
+)
+
+;; define n or the 0 and n option in case of tip = 1
+(define (prune-begin mat n pos-aux iscol b)
+  ;;define index of cell
+  (define pos (if iscol (cons b pos-aux) (cons pos-aux b)))
+  (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
+    (matrix-set! mat (car pos) (cdr pos) '(0 n))
+    (block-prune! mat (car pos) (cdr pos) n))
+)
+  
+;; fill how line start in 1 and goes to n
+(define (prune-line mat n pos-aux iscol op b)
+  (define aux 1) ;; aux that will help in fill col/row
+  (let iter ((i b))
+    ;;define index of cell
+    (define pos (if iscol (cons i pos-aux) (cons pos-aux i)))
+      (if (< i n)
+          (begin
+            (block-prune! mat (car pos) (cdr pos) aux) ;;fill cell with value
+            (set! aux (+ aux 1)) ;;change aux to next value
+            (iter (op i 1)))))
+)
+
+;; pruning in matrix based in tip 'n'
+(define (prune-aux mat n rem-list a-pos iscol op b)
+  ;;define index of cell
+  (define pos (if iscol (cons b a-pos) (cons a-pos b)))
+  (if (= n 0)
+    #f
+    (begin
+      (matrix-set! mat (car pos) (cdr pos)  (purge rem-list (matrix-ref mat (car pos) (cdr pos))))
+      (prune-aux mat (- n 1) (cdr rem-list) a-pos iscol op (op b 1)))))
 
 ;; format input restrictions
 (define (restriction-view-map seq)
   (filter (lambda (pair) (not (= (car pair) 0)))
           (map cons seq (range 0 (- (length seq) 1)))))
+
+;; return the list ori without any elements in the list rem
+(define (purge rem ori)
+  (if (list? ori)
+  ; (define delete remove) ; others' remove <=> Guile's delete
+    (if (null? rem) ori
+        (purge (cdr rem) (delete (car rem) ori)))
+    ori
+  )
+)
 
 ;; main script
 (define (main)
@@ -126,7 +200,12 @@
     (display "Looking for a solution...\n")
     (cond ((wolkenkratzer n upper left bottom right lo hi) => matrix-display)
           (else (display "Impossible!")))
-    (newline)))
+    (newline)
+    (newline)
+    ;(display (range (- 5 (- 2 2)) 5))
+ 
+    ;(wolkenkratzer-prune (make-matrix n n (range lo hi)) n upper left bottom right)
+    ))
 
 (main)
 (exit 0)
