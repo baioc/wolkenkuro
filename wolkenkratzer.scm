@@ -94,6 +94,9 @@
   (define w (make-matrix n n (range lo hi)))
   ;; pruning board
   (wolkenkratzer-prune w n upper left bottom right)
+  (newline)
+  (matrix-display w)
+  (newline)
   ;; actually solving it
   (solve (matrix-map shuffle w)
          may-allow? find-amb-terrain consider-construction))
@@ -134,7 +137,7 @@
   (define cell (matrix-ref mat (car pos) (cdr pos)))
   (if (list? cell)
     (if (= (car (matrix-ref mat (car pos) (cdr pos))) 0)
-      (matrix-set! mat (car pos) (cdr pos) (list 0 n))
+      (matrix-set! mat (car pos) (cdr pos) (list 0 (- n 1)))
       (block-prune! mat (car pos) (cdr pos) n)))
 )
   
