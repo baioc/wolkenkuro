@@ -29,13 +29,12 @@
 ;;;   call the success continuation in order to accept that solution.
 
 (define (solve problem possible? ambiguous? collapse)
-  (call/cc (lambda (return)
-    (let retry ((solutions problem)
-                (backtrack (lambda () (return #f))))
-      (cond ((not (possible? solutions)) (backtrack))
-            ((ambiguous? solutions) =>
-               (lambda (ambiguity)
-                 (collapse retry solutions backtrack ambiguity)))
-            (else (return solutions)))))))
+  (let retry ((solutions problem)
+              (backtrack (lambda () (return #f))))
+    (cond ((not (possible? solutions)) (backtrack))
+          ((ambiguous? solutions) =>
+              (lambda (ambiguity)
+                (collapse retry solutions backtrack ambiguity)))
+          (else solutions))))
 
 ;;; see test.scm for example usage
